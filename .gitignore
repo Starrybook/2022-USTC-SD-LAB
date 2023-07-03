@@ -1,0 +1,10 @@
+*.runs/
+*.sim/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.xpr
+*.gen/
+
+.vscode/
+Fragments/

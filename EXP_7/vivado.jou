@@ -1,0 +1,36 @@
+#-----------------------------------------------------------
+# Vivado v2022.1 (64-bit)
+# SW Build 3526262 on Mon Apr 18 15:48:16 MDT 2022
+# IP Build 3524634 on Mon Apr 18 20:55:01 MDT 2022
+# Start of session at: Sun Dec  4 22:51:48 2022
+# Process ID: 12584
+# Current directory: E:/vivado_files/EXP_7
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent24244 E:\vivado_files\EXP_7\EXP_7.xpr
+# Log file: E:/vivado_files/EXP_7/vivado.log
+# Journal file: E:/vivado_files/EXP_7\vivado.jou
+# Running On: LAPTOP-SES45VI5, OS: Windows, CPU Frequency: 3302 MHz, CPU Physical cores: 4, Host memory: 16952 MB
+#-----------------------------------------------------------
+start_gui
+open_project E:/vivado_files/EXP_7/EXP_7.xpr
+update_compile_order -fileset sources_1
+reset_run synth_1
+launch_runs impl_1 -jobs 4
+wait_on_run impl_1
+open_run impl_1
+report_utilization -name utilization_1
+update_compile_order -fileset sources_1
+# Disabling source management mode.  This is to allow the top design properties to be set without GUI intervention.
+set_property source_mgmt_mode None [current_project]
+set_property top TEST_MAIN [current_fileset]
+# Re-enabling previously disabled source management mode.
+set_property source_mgmt_mode All [current_project]
+update_compile_order -fileset sources_1
+reset_run synth_1
+launch_runs synth_1 -jobs 4
+wait_on_run synth_1
+launch_runs impl_1 -jobs 4
+wait_on_run impl_1
+report_utilization -name utilization_2
+refresh_design
+report_utilization -name utilization_1
+report_timing_summary -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10 -input_pins -routable_nets -name timing_1

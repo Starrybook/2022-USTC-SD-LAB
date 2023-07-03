@@ -1,0 +1,192 @@
+// 最初的版本： 有在计时时无法通过设定新值重新开始计时的缺陷
+// module TM #(
+//     parameter T=1000,           // 1000毫秒，即为秒
+//               MS=100000
+// )(
+//     input [15:0] tc,
+//     input st,
+//     input rstn,         // 复位后q=0,d=1
+//     input clk,
+//     output [31:0] q,
+//     output reg td
+//     //////////////////////测试用接口
+//     // output test_ctr,
+//     // output [31:0] test_k,
+//     // output test_clkd
+//     // output [31:0] test_counter
+//     );
+//     // parameter clk_pd=T*MS;
+//     reg [31:0] counter=0;
+//     assign q=counter;
+//     wire clkd;
+//     wire ctr;
+//     parameter timeinterval=T*MS;
+//     reg [31:0] k;
+//     always @(*)
+//         if(td)
+//             k<=0;
+//         else
+//             k<=T*MS;
+
+//     udf_FD fd(
+//         .k(k),
+//         .clk(clk),
+//         .rstn(rstn),
+//         .y(clkd)
+//     );
+
+//     longer L(
+//         .x(st),
+//         .rstn(rstn),
+//         .clk(clk),
+//         .y(ctr)
+//     );
+//     wire tempctr;
+//     wire temptd1;
+//     reg  temptd2;
+//     and and0(tempctr,~ctr,!counter);
+//     DFF dff(
+//         .d(tempctr),
+//         .rstn(rstn),
+//         .clk(clk),
+//         .q(temptd1)
+//     );
+//     wire sel;
+//     DFF dff1(
+//         .d(td),
+//         .rstn(rstn),
+//         .clk(clk),
+//         .q(sel)
+//     );
+//     always @(*)
+//         td=sel?temptd1:temptd2;
+//     always @(posedge clkd, negedge rstn) begin
+//         if(~rstn) begin
+//             temptd2<=1'b1;
+//             counter<=32'h0000_0000;
+//         end
+//         else
+//             if(ctr) begin
+//                 if(|tc)
+//                     temptd2<=1'b0;
+//                 counter<={16'h0000,tc};
+//             end
+//             else if(counter<=32'h00000001) begin
+//                 temptd2<=1'b1;
+//                 counter<=32'h0000_0000;
+//             end
+//             else begin
+//                 temptd2<=1'b0;
+//                 counter<=counter-1'h1;
+//             end
+//     end
+// ///////////////////测试用接口
+//     // assign test_ctr=ctr;
+//     // assign test_k=k;
+//     // assign test_clkd=clkd;
+//     // assign test_counter=counter;
+// endmodule
+
+// 用于延迟信号几个周期，以使得线路有时间在计时开始以前的几十纳秒内完成对counter的赋值
+// 一个补救性的措施
+// module longer(
+//     input x,
+//     input clk,
+//     input rstn,
+//     output y
+// );
+//     wire temp0,temp1,temp2;
+//     DFF d1(x,rstn,clk,temp0);
+//     DFF d2(temp0,rstn,clk,temp1);
+//     DFF d3(temp1,rstn,clk,temp2);
+//     or or0(y,x,temp0,temp1,temp2);
+// endmodule
+
+// Version2：使用状态机实现，由于缺少对counter进行异步置新值的途径（时钟冲突）而没有实现
+// module TM #(
+//     parameter T=1000,           // 1000毫秒，即为秒
+//               MS=100000
+// )(
+//     input [15:0] tc,
+//     input st,
+//     input rstn,         // 复位后q=0,d=1
+//     input clk,
+//     output [31:0] q,
+//     output td
+//     );
+//     reg [31:0] counter;
+//     wire clkd,clkd0;
+//     parameter timeinterval=T*MS;
+//     reg [31:0] k;
+//     always @(k) k=T*MS;
+//     udf_FD fd(
+//         .k(k),
+//         .clk(clk),
+//         .rstn(rstn),
+//         .y(clkd0)
+//     );
+
+//     parameter [1:0]
+//         WAIT=2'b00,
+//         CLEAR=2'b01,
+//         SET=2'b10,
+//         COUNT=2'b11;
+
+//     reg ctr0,ctr1;
+//     reg [1:0] ns,cs;
+//     always @(posedge clk, negedge rstn) begin
+//         if(!rstn)
+//             cs<=WAIT;
+//         else
+//             cs<=ns;
+//     end
+//     always @(*) begin
+//         case(cs)
+//             WAIT: begin
+//                 if(st)
+//                     ns<=CLEAR;
+//                 else
+//                     ns<=WAIT;
+//                 ctr0<=0;
+//                 ctr1<=1;
+//             end
+//             CLEAR: begin
+//                 ns<=SET;
+//                 ctr0<=0;
+//                 ctr1<=0;
+//             end
+//             SET: begin
+//                 ns<=COUNT;
+//                 ctr0<=0;
+//                 ctr1<=1;
+//             end
+//             COUNT: begin
+//                 if(st)
+//                     ns<=CLEAR;
+//                 else if(counter<=32'h0000_0001)
+//                     ns<=WAIT;
+//                 else
+//                     ns<=COUNT;
+//                 ctr0=1;
+//                 ctr1=1;
+//             end
+//             default: begin
+//                 ns<=WAIT;
+//                 ctr0<=0;
+//                 ctr1<=1;
+//             end
+//         endcase
+//     end
+
+//     assign clkd=ctr0?clkd0:0;
+//     always @(posedge clk, negedge rstn) begin
+//         if(!rstn)
+//             counter<=0;
+//         else if(ctr1)
+//             counter<=0;
+//         else
+//             #(T*MS) counter<=ctr0?(counter-1):{16'h0000,tc};
+//     end
+//     assign td=~ctr0;
+//     assign q=counter;
+// endmodule

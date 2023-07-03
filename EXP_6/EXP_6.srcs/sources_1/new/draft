@@ -1,0 +1,125 @@
+
+// module PU(
+//     input draw,
+//     input [3:0] dir,
+//     input [11:0] prgb,
+//     input rstn,clk,
+//     output [14:0] waddr,
+//     output [11:0] wdata,
+//     output reg we
+//     );
+//     // 这里的输入经过消抖与取边沿处理
+//     reg [14:0] cur=0;
+//     // 因为draw是经过消抖取边沿的，然而实际要求draw在每按下一次之后转变状态
+//     // 所以draw需要转变为另一有效信号ifdraw
+//     reg ifdraw=1;
+//     always @(posedge clk,negedge rstn) begin
+//         if(!rstn) begin
+//             // cur<=50*200+50;
+//             cur<=0;
+//             we<=0;
+//         end
+//         else if(draw)               ifdraw=~ifdraw;
+//         else begin
+//             // 200*150(h*c)
+//             case(dir)
+//                 4'b1000: begin      if(ifdraw)    we<=1;
+//                     if(cur>=200)    cur<=cur-200;
+//                     else            cur<=cur;
+//                 end
+//                 4'b0100: begin      if(ifdraw)    we<=1;
+//                     if(cur<=149*200-1)  cur<=cur+200;
+//                     else                cur<=cur;
+//                 end
+//                 4'b0010: begin      if(ifdraw)    we<=1;
+//                     if(cur%200>0)   cur<=cur-1;
+//                     else            cur<=cur;
+//                 end
+//                 4'b0001: begin      if(ifdraw)    we<=1;
+//                     if(cur%200<199) cur<=cur+1;
+//                     else            cur<=cur;
+//                 end
+//                 4'b1010: begin      if(ifdraw)    we<=1;   // 左上
+//                     if(cur>=200&&cur%200>0) cur<=cur-201;
+//                     else if(cur>=200)       cur<=cur-200;
+//                     else if(cur%200>0)      cur<=cur-1;
+//                     else                    cur<=cur;
+//                 end
+//                 4'b1001: begin      if(ifdraw)    we<=1;   // 右上
+//                     if(cur>=200&&cur%200<199)   cur<=cur-199;
+//                     else if(cur>=200)           cur<=cur-200;
+//                     else if(cur%200<199)        cur<=cur+1;
+//                     else                        cur<=cur;
+//                 end
+//                 4'b0110: begin      if(ifdraw)    we<=1;   // 左下
+//                     if(cur<=149*200-1&&cur%200>0)   cur<=cur+199;
+//                     else if(cur<=149*200-1)         cur<=cur+200;
+//                     else if(cur%200>0)              cur<=cur-1;
+//                     else                            cur<=cur;
+//                 end
+//                 4'b0101: begin      if(ifdraw)    we<=1;   // 右下
+//                     if(cur<=149*200-1&&cur%200<199) cur<=cur+201;
+//                     else if(cur<=149*200-1)         cur<=cur+200;
+//                     else if(cur%200<199)            cur<=cur+1;
+//                     else                            cur<=cur;
+//                 end
+//                 default: begin
+//                     we<=0;
+//                     cur<=cur;
+//                 end
+//             endcase
+//         end
+//     end
+//     assign wdata=prgb;
+//     assign waddr=cur;
+// endmodule
+
+
+// module DDP(
+//     input [11:0] rdata,
+//     input hen,ven,
+//     input rstn,
+//     input pclk,
+//     output [14:0] raddr,
+//     output [11:0] rgb,
+//     ////////////测试用端口
+//     output [32:0] test_cnt
+//     );
+//     // 从200*150的储存区域中读取800*600的信息，一格读四次，一行读两次
+//     parameter width_out=800,height_out=600,lim=width_out*height_out-1;
+//     // cnt为k时，读取200*(k/800)+(k%800)/4处的数据
+//     reg [32:0] cnt=lim;
+//     always @(posedge pclk,negedge rstn) begin
+//         if(!rstn) begin
+//             cnt<=lim;
+//         end
+//         else if(hen&&ven) begin
+//             if(cnt>=lim)      cnt<=0;
+//             else              cnt<=cnt+1;
+//         end
+//     end
+//     assign rgb=rdata;
+//     assign raddr=(hen&&ven)?200*(cnt/width_out)+(cnt%width_out)/4:0;
+//     //////////////测试用端口
+//     assign test_cnt=cnt;
+// endmodule
+
+// 因为要显示图片，图片由bmp格式转换为rgb565，十六位, 在这里对端口做一些改动
+// module VRAM(
+//     input [14:0] waddr,
+//     input [15:0] wdata,
+//     input we,
+//     input clk,pclk,
+//     input [14:0] raddr,
+//     output [15:0] rdata
+//     );
+//     blk_mem_gen_0 blk0(
+//     .clka(clk),    // input wire clka
+//     .wea(we),      // input wire [0 : 0] wea
+//     .addra(waddr),  // input wire [14 : 0] addra
+//     .dina(wdata),    // input wire [11 : 0] dina
+//     .clkb(pclk),    // input wire clkb
+//     .addrb(raddr),  // input wire [14 : 0] addrb
+//     .doutb(rdata)  // output wire [11 : 0] doutb
+//     );
+// endmodule

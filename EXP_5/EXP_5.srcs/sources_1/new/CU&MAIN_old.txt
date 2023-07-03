@@ -1,0 +1,457 @@
+// CU第二版，仿真正常，上板时排序无效
+// module CU(
+//     input [15:0] x,
+//     input del,
+//     input nxt,
+//     input pre,
+//     input exe,
+//     input rstn,
+//     input clk,
+//     input cmp_res,      // 比较电路的反馈信号，高电平为<
+//     // 主控部分
+//     output [3:0] hd,
+//     output reg ctr,
+//     output reg [1:0] ctr_ar,
+//     output reg [1:0] ctr_dr,
+//     output reg ctr_we,
+//     output reg ctr_we2,
+//     output reg [1:0] ctr_wa,
+//     output [4:0] ra0,
+//     output [4:0] ra1,
+//     output reg [15:0] delay,
+//     /////////////////////测试用端口
+//     output gs_out,
+//     output [3:0] state,
+//     output [3:0] nxtstate
+//     );
+//     // 计数，用于冒泡排序,cntLim为每一轮的上界
+//     reg [4:0] cntLim,cnt0=0,cnt1=1;
+//     wire in_del,in_nxt,in_pre,in_exe;
+//     DBPS db0(del,rstn,clk,in_del);
+//     DBPS db1(nxt,rstn,clk,in_nxt);
+//     DBPS db2(pre,rstn,clk,in_pre);
+//     DBPS db3(exe,rstn,clk,in_exe);
+
+//     wire [3:0] temphd,pshd;
+//     wire gs0,gs;
+//     // wire [3:0] wire_hd;
+//     ECD ecd(x,temphd,gs0);
+//     DBPS db4(gs0,rstn,clk,gs);
+//     genvar i;
+//     for(i=0;i<4;i=i+1) begin
+//         DB db(temphd[i],rstn,clk,hd[i]);
+//         PS ps(hd[i],rstn, clk,pshd[i]);
+//     end
+//     // longer lg(wire_hd,rstn,clk,hd);
+
+//     // 状态
+//     parameter [3:0]
+//         S0 =4'h0, S1 =4'h1, S2 =4'h2, S3 =4'h3, S4 =4'h4, S5 =4'h5, S6 =4'h6,
+//         SS0=4'h7, SS1=4'h8, SS2=4'h9, SS3=4'ha, SS4=4'hb;
+//     reg [3:0] cs,ns;
+//     // Moore型，使用三段式
+//     // 组合部分
+//     always @(*) begin
+//         case(cs)
+//             S0:     ns=S1;
+//             S1:     ns=S2;
+//             S2:     if(gs||(|pshd))    ns=S3;
+//                     else if(in_del)    ns=S4;
+//                     else if(in_nxt)    ns=S5;
+//                     else if(in_pre)    ns=S6;
+//                     else if(in_exe)    ns=SS0;
+//                     else            ns=S2;
+//             S3:     ns=S2;
+//             S4:     ns=S2;
+//             S5:     ns=S1;
+//             S6:     ns=S1;
+//             SS0:    ns=SS1;
+//             // SS1:    ns=(cntLim==0)?S1:SS2;// 为调试解决上版时出现无法退出的问题添加了一个退出的途径
+//             SS1:    ns=(cntLim==0||delay>=16'h0f00)?S1:SS2;
+//             SS2:    ns=cmp_res?SS3:SS4;
+//             SS3:    ns=SS4;
+//             SS4:    ns=SS1;
+//             default:ns=S0;
+//         endcase
+//     end
+
+//     // 时序部分
+//     always @(posedge clk,negedge rstn) begin
+//         if(!rstn)   cs<=S0;
+//         else        cs<=ns;
+//     end
+
+//     // 输出部分
+//     always @(*) begin
+//         // ctr,在进入排序状态时为1,与busy相关
+//         ctr=(cs>=4'h7&&cs<=4'hb)?1:0;
+//         // ra0,ra1(cnt0,cnt1),cntLim
+//         if(cs==SS0) begin
+//             cntLim=31;
+//             cnt0=0;
+//             cnt1=1;
+//         end
+//         if(cs==SS4)
+//             if(cntLim==0) begin
+//                 cntLim=0;
+//                 cnt0=0; cnt1=1;
+//             end
+//             else if(cnt0<cntLim-1)begin
+//                 // cntLim=cntLim;
+//                 cnt0=cnt0+1; cnt1=cnt1+1;
+//             end
+//             else begin
+//                 cntLim=cntLim-1;
+//                 cnt0=0; cnt1=1;
+//             end
+//         // ctr_we,写使能,后添加另一写使能,在排序时生效
+//         ctr_we=(cs==S5||cs==S6||cs==SS3)?1:0;
+//         ctr_we2=(cs==SS3)?1:0;
+//         // ctr_ar,ctr_dr
+//         ctr_ar=(cs==S5)?1:(cs==S6?2:(cs==S1||cs==S2||cs==S3||cs==S4)?3:0);
+//         ctr_dr=(cs==S3)?2:(cs==S4?1:(cs==S0||cs==S1)?0:3);
+//         // ctr_wa
+//         ctr_wa=(cs==S5)?3:(cs==S6?2:((cs>=4'h7&&cs<=4'hb)?1:0));
+//     end
+
+//     // 另加一个用于计数的delay
+//     always @(posedge clk,negedge rstn) begin
+//         if(!rstn)                   delay<=0;
+//         else if(cs==SS0)            delay<=0;
+//         else if(cs>4'h7&&cs<=4'hb)  delay<=delay+1;
+//         else                        delay<=delay;
+//     end
+
+//     assign ra0=cnt0, ra1=cnt1;
+    
+//     /////////////////////测试用
+//     assign state=cs,nxtstate=ns;
+//     assign gs_out=gs;
+//     /////////////////////
+// endmodule
+
+module longer#(
+    parameter WIDTH=4
+)(
+    input [WIDTH-1:0] x,
+    input rstn,
+    input clk,
+    output reg [WIDTH-1:0] y
+);
+    wire [WIDTH-1:0] temp0,temp1;
+    RG #(WIDTH) d1(x,rstn,clk,temp0);
+    RG #(WIDTH) d2(temp0,rstn,clk,temp1);
+    always @(*)
+        if(!rstn)  y=0;
+        else if(x) y=x;
+        else if(temp0) y=temp0;
+        else if(temp1) y=temp1;
+        else y=0;
+endmodule
+
+// CU第一个版本，控制变量较多，较为繁琐
+// module CU(
+//     input [15:0] x,
+//     input del,
+//     input nxt,
+//     input pre,
+//     input exe,
+//     input rstn,
+//     input clk,
+//     input cmp_res,      // 比较电路的反馈信号，高电平为<
+//     // 主控部分
+//     output [3:0] hd,
+//     output reg ctr,
+//     output reg [1:0]ctr_ar,
+//     output reg [1:0]ctr_dr,
+//     output reg ctr_we,
+//     output reg ctr_we2,
+//     // 排序部分用到的一些信号
+//     output [4:0] ra0,
+//     output [4:0] ra1,
+//     output reg [1:0] ctr_ra0,
+//     output reg ctr_dr0,
+//     // 修改后增加了一个读口,一些原有端口被删去
+//     // output reg ctr_wd_sort,
+//     output [4:0] wa_sort,
+//     output [4:0] wa2_sort,
+//     output reg [15:0] delay,
+//     /////////////////////测试用端口
+//     output [3:0] state,
+//     output [3:0] nxtstate
+//     );
+//     wire [3:0] temphd;
+//     wire in_del,in_nxt,in_pre,in_exe;
+//     // reg ctr_wa_sort;
+//     // 计数，用于冒泡排序,cntLim为每一轮的上界
+//     reg [4:0] cntLim=31,cnt0=0,cnt1=1;
+//     // hd需要与ctr_dr同时变化
+//     wire [3:0] wire_hd;
+//     longer lg(wire_hd,rstn,clk,hd);
+//     // 先将各个输入接上DB与PS
+//     genvar i;
+//     for(i=0;i<4;i=i+1) begin
+//         DBPS dbps(temphd[i],rstn,clk,wire_hd[i]);
+//     end
+//     DBPS db0(del,rstn,clk,in_del);
+//     DBPS db1(nxt,rstn,clk,in_nxt);
+//     DBPS db2(pre,rstn,clk,in_pre);
+//     DBPS db3(exe,rstn,clk,in_exe);
+//     wire gs0,gs;
+//     ECD ecd(x,temphd,gs0);
+//     DBPS db4(gs0,rstn,clk,gs);
+//     // 状态
+//     parameter [3:0]
+//         S0 =4'h0, S1 =4'h1, S2 =4'h2, S3 =4'h3, S4 =4'h4, S5 =4'h5, S6 =4'h6,
+//         SS0=4'h7, SS1=4'h8, SS2=4'h9, SS3=4'ha, SS4=4'hb, SS5=4'hc, SS6=4'hD;
+//     reg [3:0] cs,ns;
+//     // Moore型，使用三段式
+//     // 组合部分
+//     always @(*) begin
+//         case(cs)
+//             S0:     ns=S1;
+//             S1:     ns=S2;
+//             S2:     if(gs)              ns=S3;
+//                     else if(in_del)    ns=S4;
+//                     else if(in_nxt)    ns=S5;
+//                     else if(in_pre)    ns=S6;
+//                     else if(in_exe)    ns=SS0;
+//                     else            ns=S2;
+//             S3:     ns=S2;
+//             S4:     ns=S2;
+//             S5:     ns=S1;
+//             S6:     ns=S1;
+//             SS0:    ns=SS1;
+//             SS1:    ns=(cntLim==0)?S1:SS2;
+//             SS2:    ns=SS3;
+//             SS3:    ns=cmp_res?SS4:SS6;
+//             SS4:    ns=SS5;
+//             SS5:    ns=SS6;
+//             SS6:    ns=SS1;
+//             default:ns=S0;
+//         endcase
+//     end
+//     // 时序部分
+//     always @(posedge clk,negedge rstn) begin
+//         if(!rstn)   cs<=S0;
+//         else        cs<=ns;
+//     end
+//     // 输出部分
+//     always @(*) begin
+//         // 由于信号变量过多，且很多仅在少数状态发生变化，因此用case表示过于冗余
+//         // 针对各个信号单独处理
+//         // ctr,在进入排序状态时为1,与busy相关
+//         ctr=(cs>=4'h7&&cs<=4'hD)?1:0;
+//         // ra0,ra1(cnt0,cnt1),cntLim
+//         if(cs==SS0) begin
+//             cntLim=31;
+//             cnt0=0;
+//             cnt1=1;
+//         end
+//         if(cs==SS6)
+//             if(cntLim==0) begin
+//                 cnt0=0;
+//                 cnt1=1;
+//                 cntLim=0;
+//             end
+//             else if(cnt0<cntLim-1)begin
+//                 cntLim=cntLim;
+//                 cnt0=cnt0+1;
+//                 cnt1=cnt1+1;
+//             end
+//             else begin
+//                 cntLim=cntLim-1;
+//                 cnt0=0;
+//                 cnt1=1;
+//             end
+//         // ctr_wd_sort,ctr_wa_sort
+//         // ctr_wd_sort=(cs==SS4)?1:0;   // 修改后被删去
+//         // ctr_wa_sort=(cs==SS5)?1:0;   // 修改后被删去
+//         // ctr_we,写使能,后添加另一写使能,在排序时生效
+//         ctr_we=(cs==S5||cs==S6||cs==SS4||cs==SS5)?1:0;
+//         ctr_we2=(cs==SS4||cs==SS5)?1:0;
+//         // ctr_ar,ctr_dr
+//         ctr_ar=(cs==S5)?1:(cs==S6?2:(cs==S1||cs==S2||cs==S3||cs==S4)?3:0);
+//         ctr_dr=(cs==S3)?2:(cs==S4?1:(cs==S1||cs==S2||cs==S5||cs==S6)?3:0);
+//         // ctr_ra0,ctr_dr0
+//         ctr_ra0=(cs==S5)?2:((cs==S6)?3:((cs>=4'h7&&cs<=4'hD)?1:0));
+//         ctr_dr0=(cs==S5||cs==S6||cs==S1)?1:0;
+//     end
+//     // 另加一个用于计数的delay
+//     always @(posedge clk,negedge rstn) begin
+//         if(!rstn)                   delay<=0;
+//         else if(cs==SS0)            delay<=0;
+//         else if(cs>4'h7&&cs<=4'hD)  delay<=delay+1;
+//         else                        delay<=delay;
+//     end
+//     assign ra0=cnt0, ra1=cnt1;
+//     // assign wa_sort=ctr_wa_sort?cnt1:cnt0;    // 修改后被删去
+//     assign wa_sort=cnt0,wa2_sort=cnt1;
+//     /////////////////////测试用
+//     assign state=cs,nxtstate=ns;
+//     /////////////////////
+// endmodule
+
+// MAIN旧的版本
+// module MAIN(
+//     input [15:0] x,
+//     input del,pre,nxt,exe,
+//     input rstn,
+//     input clk,
+//     output [7:0] an,
+//     output [6:0] cn,
+//     output busy,
+//     output [15:0] delay,
+//     ///////////////////测试用端口
+//     output [4:0]  ar_out,
+//     output [15:0] dr_out,
+//     output [4:0] wa_out,
+//     output [15:0] wd_out,
+//     output [4:0] wa2_out,
+//     output [15:0] wd2_out,
+//     output ctr_we2_out,
+//     output [1:0] ctr_dr_out,ctr_ar_out,
+//     output ctr_we_out,cmp_res_out,
+//     output ctr_out,     //ctr_wd_sort_out,
+//     output [1:0] ctr_ra0_out,
+//     output ctr_dr0_out,
+//     output [3:0] cs_out,ns_out,
+//     output [3:0] test_hd,
+//     output [4:0]  ra0_out,ra1_out,
+//     output [15:0] data1e,
+//     output [15:0] data1f,
+//     output [15:0] data0,
+//     output [15:0] data1,
+//     output [15:0] data2,
+//     ////////////////////测试排序的端口
+//     output [15:0] rd0_out,rd1_out
+//     );
+//     // 数据通路部分
+//     wire [3:0] hd;
+//     // 注意为reg，避免逻辑环
+//     wire [4:0] ar;
+//     reg [4:0] temp_ar;
+//     wire [15:0] dr;
+//     reg [15:0] temp_dr;
+//     // AR,DR寄存器
+//     RG #(5)  AR(.d(temp_ar),.rstn(rstn),.clk(clk),.q(ar));
+//     RG #(16) DR(.d(temp_dr),.rstn(rstn),.clk(clk),.q(dr));
+//     wire cmp_res;
+//     wire ctr_we;        // ctr_wd_sort 修改后被删去
+//     wire ctr_we2;       // 修改后添加
+//     wire ctr,ctr_wd,ctr_wa;
+//     wire [1:0] ctr_ra0;
+//     wire ctr_dr0;
+//     wire [1:0]  ctr_ar,ctr_dr;
+//     wire [4:0]  wa,wa2,ra0,cu_out_ra0,ra1,wa_sort,wa2_sort;
+//     wire [15:0] rd0,rd1,wd,wd2,dr_in;      // wd_in1修改后被删去
+//     // 读口与写口之间加一级寄存器
+//     wire [15:0] rg0,rg1;
+//     RG #(16)  RG0(.d(rd0),.rstn(rstn),.clk(clk),.q(rg0));
+//     RG #(16)  RG1(.d(rd1),.rstn(rstn),.clk(clk),.q(rg1));
+//     //////////////////////////////////////////
+//     // wire longer_ctr_we;
+//     // longer #(1) lgr(ctr_we,rstn,clk,longer_ctr_we);
+//     CU cu(
+//         .x(x),
+//         .del(del),
+//         .nxt(nxt),
+//         .pre(pre),
+//         .exe(exe),
+//         .rstn(rstn),
+//         .clk(clk),
+//         .cmp_res(cmp_res),
+//         .hd(hd),
+//         .ctr(busy),
+//         .ctr_ar(ctr_ar),
+//         .ctr_dr(ctr_dr),
+//         .ctr_we(ctr_we),
+//         .ctr_we2(ctr_we2),
+//         .ra0(cu_out_ra0),
+//         .ra1(ra1),
+//         .ctr_ra0(ctr_ra0),
+//         .ctr_dr0(ctr_dr0),
+//         // .ctr_wd_sort(ctr_wd_sort), // 修改后被删去
+//         .wa_sort(wa_sort),
+//         .wa2_sort(wa2_sort),          // 修改后添加
+//         .delay(delay),
+//         ///////////////测试用端口
+//         .state(cs_out),
+//         .nxtstate(ns_out)
+//     );
+//     DIS dis(
+//         .d({3'b000,ar,8'h00,dr}),
+//         .rstn(rstn),
+//         .clk(clk),
+//         .an(an),
+//         .cn(cn)
+//     );
+//     RF rf(
+//         .clk(clk),
+//         .ra0(ra0),
+//         .ra1(ra1),
+//         .wa(wa),
+//         .wd(wd),
+//         .we(ctr_we),
+//         // 修改后增加了一个读口
+//         .wa2(wa2),
+//         .wd2(wd2),
+//         .we2(ctr_we2),
+
+//         .rd0(rd0),
+//         .rd1(rd1),
+//         ///////////测试用端口
+//         .data1e(data1e),
+//         .data1f(data1f),
+//         .data0(data0),
+//         .data1(data1),
+//         .data2(data2)
+//     );
+//     CMP cmp(
+//         .a(rd0),
+//         .b(rd1),
+//         .ifLess(cmp_res)
+//     );
+//     // 选择器部分，使用三目运算符实现数据通路中的MUX
+//     // ra0, ra1已由CU所赋值
+//     assign ra0=ctr_ra0==0?ar:(ctr_ra0==1?cu_out_ra0:(ctr_ra0==2?(ar+1):(ar-1)));
+//     // wa,wd
+//     assign ctr_wa=ctr;
+//     assign ctr_wd=ctr;
+//     assign wa=ctr_wa?wa_sort:ar;
+//     assign wa2=wa2_sort;
+//     assign wd=ctr_wd?rg1:dr;
+//     assign wd2=rg0;
+//     // ar,dr
+//     always @(*) begin
+//         case(ctr_ar)
+//             0:      temp_ar=0;
+//             1:      temp_ar=ar+1;
+//             2:      temp_ar=ar-1;
+//             default:temp_ar=ar;
+//         endcase
+//         // temp_ar=(ctr_ar==0)?0:(ctr_ar==1?(ar+1):(ctr_ar==2?(ar-1):ar));
+//         case(ctr_dr)
+//             0:      temp_dr=0;
+//             1:      temp_dr={4'h0,dr[15:4]};
+//             2:      temp_dr={dr[11:0],hd};
+//             default:temp_dr=dr_in;
+//         endcase
+//         // temp_dr=(ctr_dr==0)?0:(ctr_dr==1?{4'h0,dr[15:4]}:(ctr_dr==2?{dr[11:0],hd}:dr_in));
+//     end
+//     // dr_in
+//     assign dr_in=ctr_dr0?rd0:temp_dr;
+//     assign ctr=busy;
+//     // ///////////////////测试用端口
+//     assign ar_out=ar,dr_out=dr;
+//     assign wa_out=wa,wd_out=wd;
+//     assign ctr_dr_out=ctr_dr,ctr_ar_out=ctr_ar;
+//     assign test_hd=hd;
+//     assign ctr_we_out=ctr_we;
+//     assign cmp_res_out=cmp_res,ctr_out=ctr;     // ctr_wd_sort_out=ctr_wd_sort,
+//     assign ctr_ra0_out=ctr_ra0,ctr_dr0_out=ctr_dr0;
+//     ////////////////////测试排序的端口
+//     assign wa2_out=wa2,wd2_out=wd2;
+//     assign ra0_out=ra0,ra1_out=ra1;
+//     assign rd0_out=rd0,rd1_out=rd1;
+// endmodule

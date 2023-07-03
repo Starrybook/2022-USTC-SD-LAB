@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="MAZEINIT_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="MAZEINIT_tb" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="100.938544 us"></ZoomEndTime>
+      <Cursor1Time time="0.000000 us"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="312"></NameColumnWidth>
+      <ValueColumnWidth column_width="149"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="32" />
+   <wvobject fp_name="/MAZEINIT_tb/rstn" type="logic">
+      <obj_property name="ElementShortName">rstn</obj_property>
+      <obj_property name="ObjectShortName">rstn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/start" type="logic">
+      <obj_property name="ElementShortName">start</obj_property>
+      <obj_property name="ObjectShortName">start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/busy" type="logic">
+      <obj_property name="ElementShortName">busy</obj_property>
+      <obj_property name="ObjectShortName">busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/wx" type="array">
+      <obj_property name="ElementShortName">wx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">wx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/wy" type="array">
+      <obj_property name="ElementShortName">wy[2:0]</obj_property>
+      <obj_property name="ObjectShortName">wy[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gwx" type="array">
+      <obj_property name="ElementShortName">gwx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">gwx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gwy" type="array">
+      <obj_property name="ElementShortName">gwy[2:0]</obj_property>
+      <obj_property name="ObjectShortName">gwy[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/listData" type="array">
+      <obj_property name="ElementShortName">listData[3:0]</obj_property>
+      <obj_property name="ObjectShortName">listData[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/rx" type="array">
+      <obj_property name="ElementShortName">rx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">rx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/ry" type="array">
+      <obj_property name="ElementShortName">ry[2:0]</obj_property>
+      <obj_property name="ObjectShortName">ry[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/grx" type="array">
+      <obj_property name="ElementShortName">grx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">grx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gry" type="array">
+      <obj_property name="ElementShortName">gry[2:0]</obj_property>
+      <obj_property name="ObjectShortName">gry[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/listState" type="array">
+      <obj_property name="ElementShortName">listState[3:0]</obj_property>
+      <obj_property name="ObjectShortName">listState[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/we" type="logic">
+      <obj_property name="ElementShortName">we</obj_property>
+      <obj_property name="ObjectShortName">we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/selfx" type="array">
+      <obj_property name="ElementShortName">selfx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">selfx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/selfy" type="array">
+      <obj_property name="ElementShortName">selfy[2:0]</obj_property>
+      <obj_property name="ObjectShortName">selfy[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/ghostx" type="array">
+      <obj_property name="ElementShortName">ghostx[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ghostx[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/ghosty" type="array">
+      <obj_property name="ElementShortName">ghosty[2:0]</obj_property>
+      <obj_property name="ObjectShortName">ghosty[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/mapState" type="array">
+      <obj_property name="ElementShortName">mapState[2:0]</obj_property>
+      <obj_property name="ObjectShortName">mapState[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/mapAddr" type="array">
+      <obj_property name="ElementShortName">mapAddr[6:0]</obj_property>
+      <obj_property name="ObjectShortName">mapAddr[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/sign" type="logic">
+      <obj_property name="ElementShortName">sign</obj_property>
+      <obj_property name="ObjectShortName">sign</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/CNTrecord1" type="logic">
+      <obj_property name="ElementShortName">CNTrecord1</obj_property>
+      <obj_property name="ObjectShortName">CNTrecord1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/CNTrecord2" type="logic">
+      <obj_property name="ElementShortName">CNTrecord2</obj_property>
+      <obj_property name="ObjectShortName">CNTrecord2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/cs" type="array">
+      <obj_property name="ElementShortName">cs[4:0]</obj_property>
+      <obj_property name="ObjectShortName">cs[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/clka" type="logic">
+      <obj_property name="ElementShortName">clka</obj_property>
+      <obj_property name="ObjectShortName">clka</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/wea" type="array">
+      <obj_property name="ElementShortName">wea[0:0]</obj_property>
+      <obj_property name="ObjectShortName">wea[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/addra" type="array">
+      <obj_property name="ElementShortName">addra[11:0]</obj_property>
+      <obj_property name="ObjectShortName">addra[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/dina" type="array">
+      <obj_property name="ElementShortName">dina[3:0]</obj_property>
+      <obj_property name="ObjectShortName">dina[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/clkb" type="logic">
+      <obj_property name="ElementShortName">clkb</obj_property>
+      <obj_property name="ObjectShortName">clkb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/addrb" type="array">
+      <obj_property name="ElementShortName">addrb[11:0]</obj_property>
+      <obj_property name="ObjectShortName">addrb[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/MAZEINIT_tb/gdl/GDL0/doutb" type="array">
+      <obj_property name="ElementShortName">doutb[3:0]</obj_property>
+      <obj_property name="ObjectShortName">doutb[3:0]</obj_property>
+   </wvobject>
+</wave_config>
